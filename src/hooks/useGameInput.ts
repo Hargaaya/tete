@@ -7,7 +7,7 @@ const TILT_DOWN_THRESHOLD = 45;
 const TILT_UP_THRESHOLD = 135;
 const COOLDOWN_MS = 1000;
 
-type UseHeadTiltOptions = {
+type UseGameInputOptions = {
   onCorrect?: () => void;
   onPass?: () => void;
   enabled?: boolean;
@@ -20,7 +20,7 @@ declare global {
   }
 }
 
-export function useHeadTilt({ onCorrect, onPass, enabled = true }: UseHeadTiltOptions) {
+export function useGameInput({ onCorrect, onPass, enabled = true }: UseGameInputOptions) {
   const [state, setState] = useState<TiltState>({
     isSupported: false,
     hasPermission: null,
@@ -106,6 +106,49 @@ export function useHeadTilt({ onCorrect, onPass, enabled = true }: UseHeadTiltOp
 
     return () => window.removeEventListener("deviceorientation", handleOrientation, true);
   }, [enabled, state.hasPermission, onCorrect, onPass]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const now = Date.now();
+      const canTrigger = now - lastActionTime.current > COOLDOWN_MS;
+
+      if (!canTrigger) {
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        lastActionTime.current = now;
+        lastAction.current = "correct";
+        setState((prev) => ({ ...prev, currentAction: "correct" }));
+        onCorrect?.();
+
+        setTimeout(() => {
+          setState((prev) => ({ ...prev, currentAction: "none" }));
+          lastAction.current = "none";
+        }, 300);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        lastActionTime.current = now;
+        lastAction.current = "pass";
+        setState((prev) => ({ ...prev, currentAction: "pass" }));
+        onPass?.();
+
+        setTimeout(() => {
+          setState((prev) => ({ ...prev, currentAction: "none" }));
+          lastAction.current = "none";
+        }, 300);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [enabled, onCorrect, onPass]);
 
   return { ...state, requestPermission };
 }

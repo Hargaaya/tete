@@ -3,7 +3,7 @@ import type { Pack } from "./types";
 import { defaultPacks } from "./data/packs";
 import { getCustomPacks } from "./utils/storage";
 import { useGameLogic } from "./hooks/useGameLogic";
-import { useHeadTilt } from "./hooks/useHeadTilt";
+import { useGameInput } from "./hooks/useGameInput";
 import { resumeAudioContext } from "./utils/audio";
 import HomeScreen from "./components/HomeScreen";
 import ReadyScreen from "./components/ReadyScreen";
@@ -19,7 +19,7 @@ export default function App() {
 
   const game = useGameLogic({ pack: selectedPack });
 
-  const tilt = useHeadTilt({
+  const input = useGameInput({
     onCorrect: game.markCorrect,
     onPass: game.markPass,
     enabled: game.phase === "playing",
@@ -36,8 +36,8 @@ export default function App() {
     try {
       await resumeAudioContext();
 
-      if (tilt.hasPermission === null) {
-        await tilt.requestPermission();
+      if (input.hasPermission === null) {
+        await input.requestPermission();
       }
     } catch (e) {
       console.warn("Failed to resume audio context:", e);
@@ -99,7 +99,7 @@ export default function App() {
   }
 
   if (game.phase === "playing") {
-    return <PlayingScreen tilt={tilt} game={game} />;
+    return <PlayingScreen input={input} game={game} />;
   }
 
   if (game.phase === "results") {

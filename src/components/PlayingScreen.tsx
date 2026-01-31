@@ -1,13 +1,13 @@
 import Screen from "./Screen";
-import type { useHeadTilt } from "../hooks/useHeadTilt";
+import type { useGameInput } from "../hooks/useGameInput";
 import type { useGameLogic } from "../hooks/useGameLogic";
 
 type Props = {
-  tilt: ReturnType<typeof useHeadTilt>;
+  input: ReturnType<typeof useGameInput>;
   game: ReturnType<typeof useGameLogic>;
 };
 
-export default function PlayingScreen({ tilt, game }: Props) {
+export default function PlayingScreen({ input, game }: Props) {
   if (!game.currentCard) {
     return (
       <Screen className="relative text-center">
@@ -20,7 +20,7 @@ export default function PlayingScreen({ tilt, game }: Props) {
 
   return (
     <Screen
-      background={tilt.currentAction === "correct" ? "bg-green-500" : tilt.currentAction === "pass" ? "bg-orange-500" : undefined}
+      background={input.currentAction === "correct" ? "bg-green-500" : input.currentAction === "pass" ? "bg-orange-500" : undefined}
       className="relative text-center"
     >
       <div className="absolute top-0 left-0 w-full flex items-center justify-center h-20">
