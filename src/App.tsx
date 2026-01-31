@@ -43,7 +43,7 @@ export default function App() {
       console.warn("Failed to resume audio context:", e);
     }
 
-    game.startGame();
+    game.startGame(pack);
   };
 
   const handleSavePack = (pack: Pack) => {

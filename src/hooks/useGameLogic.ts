@@ -24,18 +24,22 @@ export function useGameLogic({ pack }: UseGameLogicOptions) {
 
   const currentCard = shuffledCards[currentCardIndex] ?? null;
 
-  const startGame = useCallback(() => {
-    if (!pack) {
-      return;
-    }
+  const startGame = useCallback(
+    (packToUse?: Pack) => {
+      const activePack = packToUse ?? pack;
+      if (!activePack) {
+        return;
+      }
 
-    const cards = shuffleArray(pack.cards);
-    setShuffledCards(cards);
-    setCurrentCardIndex(0);
-    setResults([]);
-    setTimeRemaining(GAME_DURATION);
-    setPhase("ready");
-  }, [pack]);
+      const cards = shuffleArray(activePack.cards);
+      setShuffledCards(cards);
+      setCurrentCardIndex(0);
+      setResults([]);
+      setTimeRemaining(GAME_DURATION);
+      setPhase("ready");
+    },
+    [pack],
+  );
 
   const beginPlaying = useCallback(() => setPhase("playing"), []);
 
