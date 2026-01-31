@@ -8,6 +8,16 @@ type Props = {
 };
 
 export default function PlayingScreen({ tilt, game }: Props) {
+  if (!game.currentCard) {
+    return (
+      <Screen className="relative text-center">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <h1 className="text-6xl font-bold">All cards done!</h1>
+        </div>
+      </Screen>
+    );
+  }
+
   return (
     <Screen
       background={tilt.currentAction === "correct" ? "bg-green-500" : tilt.currentAction === "pass" ? "bg-orange-500" : undefined}
