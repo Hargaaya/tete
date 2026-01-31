@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Libre Baskerville", serif, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  font-style: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
