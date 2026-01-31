@@ -8,6 +8,7 @@ export interface Pack {
   description: string;
   icon: string; // Emoji
   cards: Card[];
+  isCustom?: boolean;
 }
 
 export type GamePhase = "home" | "ready" | "playing" | "results";

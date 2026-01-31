@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { Pack } from "./types";
 import { defaultPacks } from "./data/packs";
+import { getCustomPacks } from "./utils/storage";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useHeadTilt } from "./hooks/useHeadTilt";
 import { resumeAudioContext } from "./utils/audio";
@@ -11,7 +12,10 @@ import ResultsScreen from "./components/ResultsScreen";
 
 export default function App() {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
+  const [customPacks, setCustomPacks] = useState<Pack[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const packs = [...defaultPacks, ...customPacks];
 
   const game = useGameLogic({ pack: selectedPack });
 
@@ -20,6 +24,12 @@ export default function App() {
     onPass: game.markPass,
     enabled: game.phase === "playing",
   });
+
+  useEffect(() => {
+    getCustomPacks()
+      .then(setCustomPacks)
+      .catch((e) => console.error("Failed to load custom packs:", e));
+  }, []);
 
   const handleSelectPack = async (pack: Pack) => {
     setSelectedPack(pack);
@@ -34,6 +44,24 @@ export default function App() {
     }
 
     game.startGame();
+  };
+
+  const handleSavePack = (pack: Pack) => {
+    setCustomPacks((prev) => {
+      const existingIndex = prev.findIndex((p) => p.id === pack.id);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = pack;
+
+        return updated;
+      }
+
+      return [...prev, pack];
+    });
+  };
+
+  const handleDeletePack = (packId: string) => {
+    setCustomPacks((prev) => prev.filter((p) => p.id !== packId));
   };
 
   const handleReady = () => {
@@ -63,7 +91,7 @@ export default function App() {
   }, []);
 
   if (game.phase === "home") {
-    return <HomeScreen packs={defaultPacks} onSelectPack={handleSelectPack} />;
+    return <HomeScreen packs={packs} onSelectPack={handleSelectPack} onSavePack={handleSavePack} onDeletePack={handleDeletePack} />;
   }
 
   if (game.phase === "ready") {
