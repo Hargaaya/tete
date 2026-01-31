@@ -1,0 +1,25 @@
+import Screen from "./Screen";
+import type { useHeadTilt } from "../hooks/useHeadTilt";
+import type { useGameLogic } from "../hooks/useGameLogic";
+
+type Props = {
+  tilt: ReturnType<typeof useHeadTilt>;
+  game: ReturnType<typeof useGameLogic>;
+};
+
+export default function PlayingScreen({ tilt, game }: Props) {
+  return (
+    <Screen
+      background={tilt.currentAction === "correct" ? "bg-green-500" : tilt.currentAction === "pass" ? "bg-orange-500" : undefined}
+      className="relative text-center"
+    >
+      <div className="absolute top-0 left-0 w-full flex items-center justify-center h-20">
+        <span className={`text-4xl font-bold ${game.timeRemaining <= 10 ? "text-red-500 animate-pulse" : ""}`}>{game.timeRemaining}</span>
+      </div>
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <h1 className="text-6xl sm:text-8xl font-bold leading-tight">{game.currentCard.text}</h1>
+      </div>
+    </Screen>
+  );
+}
