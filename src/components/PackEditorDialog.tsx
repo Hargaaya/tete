@@ -196,19 +196,21 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
           </div>
         </div>
 
-        <div className="flex gap-2 mt-6">
+        <div className="flex flex-col sm:flex-row gap-2 mt-6">
           {pack && onDelete && (
-            <Button variant="danger" size="md" onClick={handleDelete}>
+            <Button variant="danger" size="md" onClick={handleDelete} className="w-full sm:w-auto">
               Delete
             </Button>
           )}
-          <div className="flex-1" />
-          <Button variant="secondary" size="md" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="success" size="md" onClick={handleSave}>
-            Save
-          </Button>
+          <div className="flex-1 hidden sm:block" />
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="secondary" size="md" onClick={onClose} className="flex-1 sm:flex-initial">
+              Cancel
+            </Button>
+            <Button variant="success" size="md" onClick={handleSave} className="flex-1 sm:flex-initial">
+              Save
+            </Button>
+          </div>
         </div>
       </div>
     </dialog>
