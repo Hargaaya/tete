@@ -4,6 +4,8 @@ import type { Pack } from "../types";
 import { savePack, deletePack } from "../utils/storage";
 import Button from "./Button";
 
+const MAX_CARDS = 500;
+
 type Props = {
   pack: Pack | null;
   open: boolean;
@@ -60,6 +62,11 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
 
     if (cards.includes(trimmed)) {
       setError("This card already exists in the pack");
+      return;
+    }
+
+    if (cards.length >= MAX_CARDS) {
+      setError(`Maximum of ${MAX_CARDS} cards per pack`);
       return;
     }
 
@@ -133,6 +140,7 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
       onClick={handleDialogClick}
       onCancel={onClose}
       className="backdrop:bg-black/50 bg-transparent p-4 max-w-lg w-full m-auto"
+      aria-label={pack ? "Edit pack" : "Create new pack"}
     >
       <div className="bg-white rounded-xl p-6">
         <h2 className="text-2xl font-bold mb-4">{pack ? "Edit Pack" : "Create New Pack"}</h2>
@@ -141,8 +149,11 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm mb-1">Icon (emoji)</label>
+            <label htmlFor="pack-icon" className="block text-sm mb-1">
+              Icon (emoji)
+            </label>
             <input
+              id="pack-icon"
               type="text"
               value={icon}
               onChange={(e) => setIcon(e.target.value)}
@@ -151,8 +162,11 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
             />
           </div>
           <div>
-            <label className="block text-sm mb-1">Name</label>
+            <label htmlFor="pack-name" className="block text-sm mb-1">
+              Name
+            </label>
             <input
+              id="pack-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -161,8 +175,11 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
             />
           </div>
           <div>
-            <label className="block text-sm mb-1">Description</label>
+            <label htmlFor="pack-desc" className="block text-sm mb-1">
+              Description
+            </label>
             <input
+              id="pack-desc"
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -171,9 +188,12 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
             />
           </div>
           <div>
-            <label className="block text-sm mb-1">Cards ({cards.length})</label>
+            <label htmlFor="pack-card-input" className="block text-sm mb-1">
+              Cards ({cards.length}/{MAX_CARDS})
+            </label>
             <div className="flex gap-2 mb-2">
               <input
+                id="pack-card-input"
                 type="text"
                 value={newCardText}
                 onChange={(e) => setNewCardText(e.target.value)}
@@ -186,7 +206,12 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
               {cards.map((card, index) => (
                 <div key={index} className="flex items-center justify-between bg-gray-200 px-3 py-2 rounded-lg">
                   <span className="truncate">{card}</span>
-                  <button type="button" onClick={() => handleRemoveCard(index)} className="text-red-500 hover:text-red-700 ml-2">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveCard(index)}
+                    className="text-red-500 hover:text-red-700 ml-2"
+                    aria-label={`Remove card: ${card}`}
+                  >
                     ✕
                   </button>
                 </div>

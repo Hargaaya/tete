@@ -43,23 +43,25 @@ export default function HomeScreen({ packs, onSelectPack, onSavePack, onDeletePa
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="list" aria-label="Available card packs">
           {packs.map((pack) => (
             <button
               key={pack.id}
               onClick={() => onSelectPack(pack)}
               className="relative flex p-6 bg-gray-200 hover:bg-gray-300 rounded-xl text-left transition-colors"
+              role="listitem"
+              aria-label={`${pack.name} — ${pack.cards.length} cards. ${pack.description}`}
             >
               {pack.isCustom && (
                 <button
                   onClick={(e) => handleEditPack(pack, e)}
                   className="absolute bottom-2 right-2 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-300 rounded-full transition-colors"
-                  title="Edit pack"
+                  aria-label={`Edit ${pack.name} pack`}
                 >
                   ⚙️
                 </button>
               )}
-              <span className="mr-4 flex items-center justify-center">
+              <span className="mr-4 flex items-center justify-center" aria-hidden="true">
                 <div className="text-6xl">{pack.icon}</div>
               </span>
               <span>
@@ -73,8 +75,11 @@ export default function HomeScreen({ packs, onSelectPack, onSavePack, onDeletePa
           <button
             onClick={handleCreatePack}
             className="flex flex-col items-center justify-center p-6 bg-gray-200 hover:bg-gray-300 rounded-xl transition-colors border-2 border-dashed border-gray-400"
+            aria-label="Create a new custom card pack"
           >
-            <div className="text-6xl text-gray-400 mb-2">+</div>
+            <div className="text-6xl text-gray-400 mb-2" aria-hidden="true">
+              +
+            </div>
             <h3 className="text-xl font-bold text-gray-500">Create Pack</h3>
           </button>
         </div>
