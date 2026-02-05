@@ -44,6 +44,7 @@ export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
 
   useEffect(() => {
     if (phase === "ready") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTimeRemaining(duration);
     }
   }, [phase, duration]);
@@ -121,6 +122,7 @@ export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
 
   useEffect(() => {
     if (phase === "playing" && currentCardIndex >= shuffledCards.length && shuffledCards.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       endGame();
     }
   }, [phase, currentCardIndex, shuffledCards.length, endGame]);

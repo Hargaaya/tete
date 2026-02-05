@@ -26,6 +26,7 @@ export default function PackEditorDialog({ pack, open, onClose, onSave, onDelete
 
   useEffect(() => {
     if (pack) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName(pack.name);
       setDescription(pack.description);
       setIcon(pack.icon);
