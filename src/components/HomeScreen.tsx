@@ -25,6 +25,8 @@ export default function HomeScreen({ packs, onSelectPack, onSavePack, onDeletePa
     setDialogOpen(true);
   };
 
+  const handleSurpriseMe = () => onSelectPack(packs[Math.floor(Math.random() * packs.length)]);
+
   return (
     <Screen background="from-slate-900 to-slate-800" className="p-6">
       <div className="max-w-2xl mx-auto">
@@ -34,6 +36,13 @@ export default function HomeScreen({ packs, onSelectPack, onSavePack, onDeletePa
         </div>
 
         <h2 className="text-2xl font-semibold mb-4 text-center">Choose a Pack</h2>
+
+        <div className="flex justify-center mb-4">
+          <Button size="sm" onClick={handleSurpriseMe} aria-label="Pick a random pack">
+            🎲 Surprise me!
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {packs.map((pack) => (
             <button
