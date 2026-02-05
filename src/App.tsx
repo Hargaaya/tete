@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import type { Pack } from "./types";
+import type { Pack, GameMode } from "./types";
 import { defaultPacks } from "./data/packs";
-import { getCustomPacks } from "./utils/storage";
+import { getCustomPacks, getSettings, saveSettings, getBestScore, saveBestScore } from "./utils/storage";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useGameInput } from "./hooks/useGameInput";
 import { resumeAudioContext } from "./utils/audio";
@@ -14,12 +14,16 @@ import ResultsScreen from "./components/ResultsScreen";
 export default function App() {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [customPacks, setCustomPacks] = useState<Pack[]>([]);
+  const [gameMode, setGameMode] = useState<GameMode>("normal");
+  const [soundEnabled, setSoundEnabledState] = useState(() => getSettings().soundEnabled);
+  const [bestScore, setBestScore] = useState<number | null>(null);
+  const [isNewBest, setIsNewBest] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { addToast } = useToast();
 
   const packs = [...defaultPacks, ...customPacks];
 
-  const game = useGameLogic({ pack: selectedPack });
+  const game = useGameLogic({ pack: selectedPack, mode: gameMode });
 
   const input = useGameInput({
     onCorrect: game.markCorrect,
@@ -33,8 +37,18 @@ export default function App() {
       .catch(() => addToast("Failed to load custom packs"));
   }, [addToast]);
 
+  const handleToggleSound = () => {
+    setSoundEnabledState((prev) => {
+      const next = !prev;
+      saveSettings({ soundEnabled: next });
+      return next;
+    });
+  };
+
   const handleSelectPack = async (pack: Pack) => {
     setSelectedPack(pack);
+    setIsNewBest(false);
+    setBestScore(getBestScore(pack.id, gameMode));
     try {
       await resumeAudioContext();
 
@@ -84,6 +98,17 @@ export default function App() {
     game.goHome();
   };
 
+  // Update best score when results phase is reached (state-during-render pattern)
+  const [prevPhase, setPrevPhase] = useState(game.phase);
+  if (game.phase !== prevPhase) {
+    setPrevPhase(game.phase);
+    if (game.phase === "results" && selectedPack) {
+      const newBest = saveBestScore(selectedPack.id, gameMode, game.correctCount);
+      setIsNewBest(newBest);
+      setBestScore(getBestScore(selectedPack.id, gameMode));
+    }
+  }
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -93,11 +118,20 @@ export default function App() {
   }, []);
 
   if (game.phase === "home") {
-    return <HomeScreen packs={packs} onSelectPack={handleSelectPack} onSavePack={handleSavePack} onDeletePack={handleDeletePack} />;
+    return (
+      <HomeScreen
+        packs={packs}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+        onSelectPack={handleSelectPack}
+        onSavePack={handleSavePack}
+        onDeletePack={handleDeletePack}
+      />
+    );
   }
 
   if (game.phase === "ready") {
-    return <ReadyScreen onReady={handleReady} onCancel={handleCancel} />;
+    return <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleReady} onCancel={handleCancel} />;
   }
 
   if (game.phase === "playing") {
@@ -105,7 +139,15 @@ export default function App() {
   }
 
   if (game.phase === "results") {
-    return <ResultsScreen game={game} onReplay={() => selectedPack && game.startGame()} onHome={game.goHome} />;
+    return (
+      <ResultsScreen
+        game={game}
+        bestScore={bestScore}
+        isNewBest={isNewBest}
+        onReplay={() => selectedPack && game.startGame()}
+        onHome={game.goHome}
+      />
+    );
   }
 
   return null;

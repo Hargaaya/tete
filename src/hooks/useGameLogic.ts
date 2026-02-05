@@ -1,20 +1,21 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import type { Pack, Card, GameResult, GamePhase } from "../types";
+import type { Pack, Card, GameResult, GamePhase, GameMode } from "../types";
+import { GAME_MODE_CONFIG } from "../types";
 import { playCorrectSound, playPassSound, playCountdownBeep, vibrate } from "../utils/audio";
 import { shuffleArray } from "../utils/helpers";
 
-const GAME_DURATION = 60;
-
 type UseGameLogicOptions = {
   pack: Pack | null;
+  mode?: GameMode;
 };
 
-export function useGameLogic({ pack }: UseGameLogicOptions) {
+export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
+  const duration = GAME_MODE_CONFIG[mode].duration;
   const [phase, setPhase] = useState<GamePhase>("home");
   const [shuffledCards, setShuffledCards] = useState<Card[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [results, setResults] = useState<GameResult[]>([]);
-  const [timeRemaining, setTimeRemaining] = useState(GAME_DURATION);
+  const [timeRemaining, setTimeRemaining] = useState(duration);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastBeepSecond = useRef<number | null>(null);
@@ -35,11 +36,17 @@ export function useGameLogic({ pack }: UseGameLogicOptions) {
       setShuffledCards(cards);
       setCurrentCardIndex(0);
       setResults([]);
-      setTimeRemaining(GAME_DURATION);
+      setTimeRemaining(duration);
       setPhase("ready");
     },
-    [pack],
+    [pack, duration],
   );
+
+  useEffect(() => {
+    if (phase === "ready") {
+      setTimeRemaining(duration);
+    }
+  }, [phase, duration]);
 
   const beginPlaying = useCallback(() => setPhase("playing"), []);
 
@@ -85,8 +92,8 @@ export function useGameLogic({ pack }: UseGameLogicOptions) {
     setShuffledCards([]);
     setCurrentCardIndex(0);
     setResults([]);
-    setTimeRemaining(GAME_DURATION);
-  }, []);
+    setTimeRemaining(duration);
+  }, [duration]);
 
   useEffect(() => {
     if (phase !== "playing") {
@@ -142,6 +149,7 @@ export function useGameLogic({ pack }: UseGameLogicOptions) {
     totalCards: shuffledCards.length,
     results,
     timeRemaining,
+    duration,
     correctCount,
     passCount,
     startGame,

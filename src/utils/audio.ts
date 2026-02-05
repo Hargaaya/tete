@@ -1,5 +1,18 @@
 let audioContext: AudioContext | null = null;
 
+function isSoundEnabled(): boolean {
+  try {
+    const raw = localStorage.getItem("tete-settings");
+    if (!raw) {
+      return true;
+    }
+
+    return JSON.parse(raw).soundEnabled !== false;
+  } catch {
+    return true;
+  }
+}
+
 function getAudioContext(): AudioContext {
   if (!audioContext) {
     audioContext = new AudioContext();
@@ -30,6 +43,10 @@ export async function resumeAudioContext(): Promise<void> {
 }
 
 function playTone(frequency: number, duration: number, type: OscillatorType = "sine"): void {
+  if (!isSoundEnabled()) {
+    return;
+  }
+
   try {
     withAudioContext((ctx) => {
       const oscillator = ctx.createOscillator();
@@ -50,7 +67,7 @@ function playTone(frequency: number, duration: number, type: OscillatorType = "s
       oscillator.stop(now + duration);
     });
   } catch (error) {
-    console.warn("Failed to play audio:", error);
+    // silently fail - non-blocking
   }
 }
 

@@ -1,16 +1,19 @@
 import { useState } from "react";
 import type { Pack } from "../types";
 import Screen from "./Screen";
+import Button from "./Button";
 import PackEditorDialog from "./PackEditorDialog";
 
 type Props = {
   packs: Pack[];
+  soundEnabled: boolean;
+  onToggleSound: () => void;
   onSelectPack: (pack: Pack) => void;
   onSavePack: (pack: Pack) => void;
   onDeletePack: (packId: string) => void;
 };
 
-export default function HomeScreen({ packs, onSelectPack, onSavePack, onDeletePack }: Props) {
+export default function HomeScreen({ packs, soundEnabled, onToggleSound, onSelectPack, onSavePack, onDeletePack }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPack, setEditingPack] = useState<Pack | null>(null);
 
@@ -31,6 +34,17 @@ export default function HomeScreen({ packs, onSelectPack, onSavePack, onDeletePa
     <Screen background="from-slate-900 to-slate-800" className="p-6">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12">
+          <div className="flex justify-end mb-2">
+            <Button
+              variant="text"
+              onClick={onToggleSound}
+              className="text-2xl p-2 fixed top-4 right-4"
+              aria-label={soundEnabled ? "Mute sounds" : "Unmute sounds"}
+              title={soundEnabled ? "Sound on" : "Sound off"}
+            >
+              {soundEnabled ? "🔊" : "🔇"}
+            </Button>
+          </div>
           <h1 className="text-5xl font-bold mb-2">Têtê</h1>
           <p className="text-gray-500">A "Heads Up!" inspired game</p>
         </div>
