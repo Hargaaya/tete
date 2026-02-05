@@ -32,6 +32,7 @@ export function useGameInput({ onCorrect, onPass, enabled = true }: UseGameInput
   const lastActionTime = useRef<number>(0);
   const lastAction = useRef<TiltAction>("none");
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setState((prev) => ({ ...prev, isSupported: "DeviceOrientationEvent" in window })), []);
 
   const requestPermission = useCallback(async (): Promise<boolean> => {

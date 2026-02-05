@@ -18,17 +18,33 @@ export default function PlayingScreen({ input, game }: Props) {
     );
   }
 
+  const cardNumber = game.currentCardIndex + 1;
+
   return (
     <Screen
       background={input.currentAction === "correct" ? "bg-green-500" : input.currentAction === "pass" ? "bg-orange-500" : undefined}
       className="relative text-center"
     >
       <div className="absolute top-0 left-0 w-full flex items-center justify-center h-20">
-        <span className={`text-4xl font-bold ${game.timeRemaining <= 10 ? "text-red-500 animate-pulse" : ""}`}>{game.timeRemaining}</span>
+        <span
+          className={`text-4xl font-bold ${game.timeRemaining <= 10 ? "text-red-500 animate-pulse" : ""}`}
+          role="timer"
+          aria-label={`${game.timeRemaining} seconds remaining`}
+        >
+          {game.timeRemaining}
+        </span>
+      </div>
+
+      <div className="absolute top-2 right-4">
+        <span className="text-sm text-gray-500" aria-label={`Card ${cardNumber} of ${game.totalCards}`}>
+          {cardNumber}/{game.totalCards}
+        </span>
       </div>
 
       <div className="absolute inset-0 flex items-center justify-center">
-        <h1 className="text-6xl sm:text-8xl font-bold leading-tight">{game.currentCard.text}</h1>
+        <h1 className="text-6xl sm:text-8xl font-bold leading-tight" aria-live="polite">
+          {game.currentCard.text}
+        </h1>
       </div>
 
       <div className="hidden sm:flex absolute bottom-6 left-0 w-full justify-center gap-8 text-gray-500 text-sm">

@@ -1,8 +1,15 @@
 import type { Pack } from "../types";
 
+export interface AppSettings {
+  soundEnabled: boolean;
+}
+
 const DB_NAME = "tete-db";
 const DB_VERSION = 1;
 const STORE_NAME = "packs";
+const SETTINGS_KEY = "tete-settings";
+const BEST_SCORES_KEY = "tete-best-scores";
+const DEFAULT_SETTINGS: AppSettings = { soundEnabled: true };
 
 let dbInstance: IDBDatabase | null = null;
 
@@ -30,6 +37,51 @@ function openDB(): Promise<IDBDatabase> {
       }
     };
   });
+}
+
+export function getSettings(): AppSettings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : DEFAULT_SETTINGS;
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+export function saveSettings(settings: AppSettings): void {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    // silently fail - non-blocking
+  }
+}
+
+export function getBestScore(packId: string, mode: string): number | null {
+  try {
+    const raw = localStorage.getItem(BEST_SCORES_KEY);
+    const scores: Record<string, number> = raw ? JSON.parse(raw) : {};
+    return scores[`${packId}:${mode}`] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveBestScore(packId: string, mode: string, score: number): boolean {
+  try {
+    const raw = localStorage.getItem(BEST_SCORES_KEY);
+    const scores: Record<string, number> = raw ? JSON.parse(raw) : {};
+    const key = `${packId}:${mode}`;
+    const prev = scores[key] ?? 0;
+    if (score > prev) {
+      scores[key] = score;
+      localStorage.setItem(BEST_SCORES_KEY, JSON.stringify(scores));
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 export async function getCustomPacks(): Promise<Pack[]> {
