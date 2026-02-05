@@ -66,7 +66,7 @@ function playTone(frequency: number, duration: number, type: OscillatorType = "s
       oscillator.start(now);
       oscillator.stop(now + duration);
     });
-  } catch (error) {
+  } catch {
     // silently fail - non-blocking
   }
 }
@@ -89,7 +89,7 @@ export function vibrate(pattern: number | number[]): void {
     if ("vibrate" in navigator) {
       navigator.vibrate(pattern);
     }
-  } catch (error) {
-    console.warn("Vibration not supported:", error);
+  } catch {
+    // silently fail - non-blocking
   }
 }

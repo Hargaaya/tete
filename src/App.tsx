@@ -55,8 +55,8 @@ export default function App() {
       if (input.hasPermission === null) {
         await input.requestPermission();
       }
-    } catch (e) {
-      console.warn("Failed to resume audio context:", e);
+    } catch {
+      // silently fail - non-blocking
     }
 
     game.startGame(pack);
