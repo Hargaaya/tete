@@ -5,6 +5,7 @@ import { getCustomPacks } from "./utils/storage";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useGameInput } from "./hooks/useGameInput";
 import { resumeAudioContext } from "./utils/audio";
+import { useToast } from "./hooks/useToast";
 import HomeScreen from "./components/HomeScreen";
 import ReadyScreen from "./components/ReadyScreen";
 import PlayingScreen from "./components/PlayingScreen";
@@ -14,6 +15,7 @@ export default function App() {
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [customPacks, setCustomPacks] = useState<Pack[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { addToast } = useToast();
 
   const packs = [...defaultPacks, ...customPacks];
 
@@ -28,8 +30,8 @@ export default function App() {
   useEffect(() => {
     getCustomPacks()
       .then(setCustomPacks)
-      .catch((e) => console.error("Failed to load custom packs:", e));
-  }, []);
+      .catch(() => addToast("Failed to load custom packs"));
+  }, [addToast]);
 
   const handleSelectPack = async (pack: Pack) => {
     setSelectedPack(pack);

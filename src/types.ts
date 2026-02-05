@@ -35,3 +35,9 @@ export interface TiltState {
   beta: number; // Front-to-back tilt (-180 to 180)
   gamma: number; // Left-to-right tilt (-90 to 90)
 }
+
+export interface Toast {
+  id: string;
+  message: string;
+  type: "error" | "success" | "info";
+}
