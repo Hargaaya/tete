@@ -1,4 +1,6 @@
+import { useState, useEffect, useRef } from "react";
 import Screen from "./Screen";
+import Button from "./Button";
 import type { useGameInput } from "../hooks/useGameInput";
 import type { useGameLogic } from "../hooks/useGameLogic";
 
@@ -8,6 +10,8 @@ type Props = {
 };
 
 export default function PlayingScreen({ input, game }: Props) {
+  const [showExitMenu, setShowExitMenu] = useState(false);
+
   if (!game.currentCard) {
     return (
       <Screen className="relative text-center">
@@ -19,13 +23,28 @@ export default function PlayingScreen({ input, game }: Props) {
   }
 
   const cardNumber = game.currentCardIndex + 1;
+  const exitDialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = exitDialogRef.current;
+    if (!dialog) return;
+
+    if (showExitMenu) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [showExitMenu]);
 
   return (
     <Screen
       background={input.currentAction === "correct" ? "bg-green-500" : input.currentAction === "pass" ? "bg-orange-500" : undefined}
       className="relative text-center"
     >
-      <div className="absolute top-0 left-0 w-full flex items-center justify-center h-20">
+      <div className="absolute top-0 left-0 w-full flex items-center justify-between px-4 h-20 z-10">
+        <Button variant="text" size="sm" onClick={() => setShowExitMenu(true)} aria-label="Exit game menu">
+          ✕
+        </Button>
         <span
           className={`text-4xl font-bold ${game.timeRemaining <= 10 ? "text-red-500 animate-pulse" : ""}`}
           role="timer"
@@ -33,10 +52,7 @@ export default function PlayingScreen({ input, game }: Props) {
         >
           {game.timeRemaining}
         </span>
-      </div>
-
-      <div className="absolute top-2 right-4">
-        <span className="text-sm text-gray-500" aria-label={`Card ${cardNumber} of ${game.totalCards}`}>
+        <span className="text-sm text-gray-500 px-4 py-1.5" aria-label={`Card ${cardNumber} of ${game.totalCards}`}>
           {cardNumber}/{game.totalCards}
         </span>
       </div>
@@ -57,6 +73,39 @@ export default function PlayingScreen({ input, game }: Props) {
           <span>Correct</span>
         </div>
       </div>
+
+      <dialog
+        ref={exitDialogRef}
+        className="rounded-xl p-8 max-w-sm w-full shadow-xl backdrop:bg-black/50 border-0 m-auto"
+        onClose={() => setShowExitMenu(false)}
+      >
+        <h2 className="text-2xl font-bold text-center mb-6">Exit game?</h2>
+        <div className="flex flex-col gap-3">
+          <Button onClick={() => setShowExitMenu(false)} aria-label="Resume game">
+            Resume
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setShowExitMenu(false);
+              game.goHome();
+            }}
+            aria-label="Go to home"
+          >
+            Home
+          </Button>
+          <Button
+            variant="text"
+            onClick={() => {
+              setShowExitMenu(false);
+              game.exitToSetup();
+            }}
+            aria-label="Restart game"
+          >
+            Restart
+          </Button>
+        </div>
+      </dialog>
     </Screen>
   );
 }

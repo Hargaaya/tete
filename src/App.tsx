@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Pack, GameMode } from "./types";
 import { defaultPacks } from "./data/packs";
 import { getCustomPacks, getSettings, saveSettings, getBestScore, saveBestScore } from "./utils/storage";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useGameInput } from "./hooks/useGameInput";
-import { resumeAudioContext } from "./utils/audio";
+import { resumeAudioContext, playCountdownBeep } from "./utils/audio";
 import { useToast } from "./hooks/useToast";
 import HomeScreen from "./components/HomeScreen";
 import ReadyScreen from "./components/ReadyScreen";
@@ -18,7 +18,7 @@ export default function App() {
   const [soundEnabled, setSoundEnabledState] = useState(() => getSettings().soundEnabled);
   const [bestScore, setBestScore] = useState<number | null>(null);
   const [isNewBest, setIsNewBest] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const { addToast } = useToast();
 
   const packs = [...defaultPacks, ...customPacks];
@@ -45,10 +45,14 @@ export default function App() {
     });
   };
 
-  const handleSelectPack = async (pack: Pack) => {
+  const handleSelectPack = (pack: Pack) => {
     setSelectedPack(pack);
     setIsNewBest(false);
     setBestScore(getBestScore(pack.id, gameMode));
+    game.selectPack();
+  };
+
+  const handleStartRound = async () => {
     try {
       await resumeAudioContext();
 
@@ -59,8 +63,27 @@ export default function App() {
       // silently fail - non-blocking
     }
 
-    game.startGame(pack);
+    game.startGame();
+    setCountdown(3);
   };
+
+  useEffect(() => {
+    if (countdown === null) {
+      return;
+    }
+
+    if (countdown > 0) {
+      playCountdownBeep();
+      const timer = setTimeout(() => setCountdown((prev) => (prev ?? 0) - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown(null);
+      game.beginPlaying();
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [countdown, game]);
 
   const handleSavePack = (pack: Pack) => {
     setCustomPacks((prev) => {
@@ -80,21 +103,8 @@ export default function App() {
     setCustomPacks((prev) => prev.filter((p) => p.id !== packId));
   };
 
-  const handleReady = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      game.beginPlaying();
-    }, 1_000);
-  };
-
   const handleCancel = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+    setCountdown(null);
     game.goHome();
   };
 
@@ -108,14 +118,6 @@ export default function App() {
       setBestScore(getBestScore(selectedPack.id, gameMode));
     }
   }
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   if (game.phase === "home") {
     return (
@@ -131,7 +133,9 @@ export default function App() {
   }
 
   if (game.phase === "ready") {
-    return <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleReady} onCancel={handleCancel} />;
+    return (
+      <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleStartRound} onCancel={handleCancel} countdown={countdown} />
+    );
   }
 
   if (game.phase === "playing") {
