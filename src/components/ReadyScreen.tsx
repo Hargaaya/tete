@@ -27,7 +27,7 @@ export default function ReadyScreen({ mode, onModeChange, onReady, onCancel, cou
   return (
     <Screen className="flex flex-col items-center justify-center p-6">
       <div className="absolute top-4 left-4 z-10">
-        <Button variant="text" onClick={onCancel} aria-label="Go back to pack selection">
+        <Button variant="text" size="sm" onClick={onCancel} aria-label="Go back to pack selection">
           ← Go back
         </Button>
       </div>

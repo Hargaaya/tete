@@ -41,12 +41,10 @@ export default function PlayingScreen({ input, game }: Props) {
       background={input.currentAction === "correct" ? "bg-green-500" : input.currentAction === "pass" ? "bg-orange-500" : undefined}
       className="relative text-center"
     >
-      <div className="absolute top-4 left-4 z-10">
-        <Button variant="text" onClick={() => setShowExitMenu(true)} aria-label="Exit game menu">
+      <div className="absolute top-0 left-0 w-full flex items-center justify-between px-4 h-20 z-10">
+        <Button variant="text" size="sm" onClick={() => setShowExitMenu(true)} aria-label="Exit game menu">
           ✕
         </Button>
-      </div>
-      <div className="absolute top-0 left-0 w-full flex items-center justify-center h-20">
         <span
           className={`text-4xl font-bold ${game.timeRemaining <= 10 ? "text-red-500 animate-pulse" : ""}`}
           role="timer"
@@ -54,10 +52,7 @@ export default function PlayingScreen({ input, game }: Props) {
         >
           {game.timeRemaining}
         </span>
-      </div>
-
-      <div className="absolute top-2 right-4">
-        <span className="text-sm text-gray-500" aria-label={`Card ${cardNumber} of ${game.totalCards}`}>
+        <span className="text-sm text-gray-500 px-4 py-1.5" aria-label={`Card ${cardNumber} of ${game.totalCards}`}>
           {cardNumber}/{game.totalCards}
         </span>
       </div>
