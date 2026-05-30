@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Pack, GameMode } from "./types";
 import { defaultPacks } from "./data/packs";
 import { getCustomPacks, getSettings, saveSettings, getBestScore, saveBestScore } from "./utils/storage";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useGameInput } from "./hooks/useGameInput";
-import { resumeAudioContext } from "./utils/audio";
+import { resumeAudioContext, playCountdownBeep } from "./utils/audio";
 import { useToast } from "./hooks/useToast";
 import HomeScreen from "./components/HomeScreen";
 import ReadyScreen from "./components/ReadyScreen";
@@ -18,7 +18,7 @@ export default function App() {
   const [soundEnabled, setSoundEnabledState] = useState(() => getSettings().soundEnabled);
   const [bestScore, setBestScore] = useState<number | null>(null);
   const [isNewBest, setIsNewBest] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const { addToast } = useToast();
 
   const packs = [...defaultPacks, ...customPacks];
@@ -64,15 +64,26 @@ export default function App() {
     }
 
     game.startGame();
+    setCountdown(3);
+  };
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+  useEffect(() => {
+    if (countdown === null) {
+      return;
     }
 
-    timeoutRef.current = setTimeout(() => {
+    if (countdown > 0) {
+      playCountdownBeep();
+      const timer = setTimeout(() => setCountdown((prev) => (prev ?? 0) - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown(null);
       game.beginPlaying();
-    }, 1_000);
-  };
+    }, 700);
+    return () => clearTimeout(timer);
+  }, [countdown, game]);
 
   const handleSavePack = (pack: Pack) => {
     setCustomPacks((prev) => {
@@ -93,10 +104,7 @@ export default function App() {
   };
 
   const handleCancel = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+    setCountdown(null);
     game.goHome();
   };
 
@@ -110,14 +118,6 @@ export default function App() {
       setBestScore(getBestScore(selectedPack.id, gameMode));
     }
   }
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   if (game.phase === "home") {
     return (
@@ -133,7 +133,9 @@ export default function App() {
   }
 
   if (game.phase === "ready") {
-    return <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleStartRound} onCancel={handleCancel} />;
+    return (
+      <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleStartRound} onCancel={handleCancel} countdown={countdown} />
+    );
   }
 
   if (game.phase === "playing") {

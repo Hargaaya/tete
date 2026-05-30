@@ -8,11 +8,22 @@ type Props = {
   onModeChange: (mode: GameMode) => void;
   onReady: () => void;
   onCancel: () => void;
+  countdown: number | null;
 };
 
 const MODE_ORDER: GameMode[] = ["chill", "normal", "hard"];
 
-export default function ReadyScreen({ mode, onModeChange, onReady, onCancel }: Props) {
+export default function ReadyScreen({ mode, onModeChange, onReady, onCancel, countdown }: Props) {
+  if (countdown !== null) {
+    return (
+      <Screen className="flex flex-col items-center justify-center">
+        <span key={countdown} className="text-[12rem] sm:text-[16rem] font-bold leading-none select-none animate-pulse">
+          {countdown > 0 ? countdown : "Go!"}
+        </span>
+      </Screen>
+    );
+  }
+
   return (
     <Screen className="flex flex-col items-center justify-center p-6">
       <div className="absolute top-4 left-4 z-10">
