@@ -15,6 +15,11 @@ const MODE_ORDER: GameMode[] = ["chill", "normal", "hard"];
 export default function ReadyScreen({ mode, onModeChange, onReady, onCancel }: Props) {
   return (
     <Screen className="flex flex-col items-center justify-center p-6">
+      <div className="absolute top-4 left-4 z-10">
+        <Button variant="text" onClick={onCancel} aria-label="Go back to pack selection">
+          ← Go back
+        </Button>
+      </div>
       <div className="text-center">
         <div className="text-8xl mb-6" aria-hidden="true">
           📱
@@ -23,7 +28,6 @@ export default function ReadyScreen({ mode, onModeChange, onReady, onCancel }: P
         <p className="text-xl text-gray-500 mb-6">Place the screen so that it is facing your foes!</p>
 
         <fieldset className="mb-8">
-          <legend className="text-sm text-gray-500 mb-2 text-center w-full">Game Mode</legend>
           <div className="flex gap-2 justify-center" role="radiogroup" aria-label="Game mode selection">
             {MODE_ORDER.map((m) => {
               const cfg = GAME_MODE_CONFIG[m];
@@ -49,9 +53,6 @@ export default function ReadyScreen({ mode, onModeChange, onReady, onCancel }: P
         <div className="flex gap-4 justify-center">
           <Button onClick={onReady} aria-label="Start game">
             Start!
-          </Button>
-          <Button variant="text" onClick={onCancel}>
-            Cancel
           </Button>
         </div>
       </div>

@@ -32,12 +32,8 @@ export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
         return;
       }
 
-      const cards = shuffleArray(activePack.cards);
-      setShuffledCards(cards);
-      setCurrentCardIndex(0);
-      setResults([]);
-      setTimeRemaining(duration);
-      setPhase("ready");
+      resetGameState("ready", false);
+      setShuffledCards(shuffleArray(activePack.cards));
     },
     [pack, duration],
   );
@@ -75,6 +71,21 @@ export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
     setCurrentCardIndex((prev) => prev + 1);
   }, [phase, currentCard]);
 
+  const resetGameState = useCallback(
+    (nextPhase: GamePhase, clearTimer = true) => {
+      if (clearTimer && timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setPhase(nextPhase);
+      setShuffledCards([]);
+      setCurrentCardIndex(0);
+      setResults([]);
+      setTimeRemaining(duration);
+    },
+    [duration],
+  );
+
   const endGame = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -84,17 +95,11 @@ export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
     setPhase("results");
   }, []);
 
-  const goHome = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setPhase("home");
-    setShuffledCards([]);
-    setCurrentCardIndex(0);
-    setResults([]);
-    setTimeRemaining(duration);
-  }, [duration]);
+  const selectPack = useCallback(() => resetGameState("ready"), [resetGameState]);
+
+  const exitToSetup = useCallback(() => resetGameState("ready"), [resetGameState]);
+
+  const goHome = useCallback(() => resetGameState("home"), [resetGameState]);
 
   useEffect(() => {
     if (phase !== "playing") {
@@ -159,6 +164,8 @@ export function useGameLogic({ pack, mode = "normal" }: UseGameLogicOptions) {
     markCorrect,
     markPass,
     endGame,
+    selectPack,
+    exitToSetup,
     goHome,
   };
 }

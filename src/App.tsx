@@ -45,10 +45,14 @@ export default function App() {
     });
   };
 
-  const handleSelectPack = async (pack: Pack) => {
+  const handleSelectPack = (pack: Pack) => {
     setSelectedPack(pack);
     setIsNewBest(false);
     setBestScore(getBestScore(pack.id, gameMode));
+    game.selectPack();
+  };
+
+  const handleStartRound = async () => {
     try {
       await resumeAudioContext();
 
@@ -59,7 +63,15 @@ export default function App() {
       // silently fail - non-blocking
     }
 
-    game.startGame(pack);
+    game.startGame();
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      game.beginPlaying();
+    }, 1_000);
   };
 
   const handleSavePack = (pack: Pack) => {
@@ -78,16 +90,6 @@ export default function App() {
 
   const handleDeletePack = (packId: string) => {
     setCustomPacks((prev) => prev.filter((p) => p.id !== packId));
-  };
-
-  const handleReady = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      game.beginPlaying();
-    }, 1_000);
   };
 
   const handleCancel = () => {
@@ -131,7 +133,7 @@ export default function App() {
   }
 
   if (game.phase === "ready") {
-    return <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleReady} onCancel={handleCancel} />;
+    return <ReadyScreen mode={gameMode} onModeChange={setGameMode} onReady={handleStartRound} onCancel={handleCancel} />;
   }
 
   if (game.phase === "playing") {
